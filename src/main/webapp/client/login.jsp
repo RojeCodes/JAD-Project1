@@ -22,6 +22,10 @@
 </head>
 <body>
 <%@include file = "navBar.jsp" %>
+	<%
+	String contextPath = request.getContextPath();
+	System.out.println(contextPath);
+	%>
 
 	<%
 	String errCode = request.getParameter("errCode");
@@ -78,7 +82,7 @@
 						<p class="text-sm text-gray-600">Experience squeaky cleaning
 							services</p>
 					</div>
-					<form action="/ST0510_JAD_Proj/user/login" method="POST">
+					<form action="<%=contextPath%>/user/login" method="POST">
 						<div class="mb-3">
 							<label for="email" class="form-label">email</label> <input
 								type="text" class="form-control" id="email" name="email"
