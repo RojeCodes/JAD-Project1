@@ -35,7 +35,8 @@
 					href="<%=contextPath%>/getCategory">Our Service Category</a></li>
 				<li class="nav-item"><a class="nav-link" href="#">Customer
 						Testimonies</a></li>
-				<li class="nav-item"><a class="nav-link" href="#">Our
+				<li class="nav-item"><a class="nav-link" 
+					href="<%=contextPath%>/client/policyPage.jsp">Our
 						Policies</a></li>
 				<li class="nav-item"><a class="nav-link"
 					href="<%=contextPath%>/client/confirmationPage.jsp">Dummy
