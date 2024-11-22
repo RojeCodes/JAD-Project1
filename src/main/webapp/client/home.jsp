@@ -1,40 +1,57 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Home</title>
-<!-- Bootstrap CDN link -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Cleaning Service Page</title>
+<style>
+  .left-text {
+    margin-top: 50px;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
 </head>
-<body>
-<%@include file = "navBar.jsp" %>
-<div>
-	<div class="row">
-		<div class="col">
-			<div class="row">
-				<h1>The widest range of services from $16/hour</h1>
-			</div>
-			
-			<div class="row">
-				<p>We deliver professional, 
-				eco-friendly cleaning for homes and businesses, 
-				ensuring spotless spaces with flexible and reliable service.</p>
-			</div>
-			
-			<div class="row">
-				<button class="btn btn-dark">Book a Service</button>
-			</div>
-		</div>
-		
-		<div class="col">
-		<span>ieojreaooooooooooofdvxknds3wpeq0idsklfs;ofknfnvnvdlas</span>
-		</div>
-	</div>
+<body class="bg-dark">
+<%@ include file="include/bootstrap.html" %>
+<%@ include file="navBar.jsp" %>
+<div class="container bg-white py-4">
+  <div class="row align-items-center">
+    <!-- Text Content -->
+    <div class="col-md-6 left-text">
+      <h1 class="h1 mb-3 text-center text-md-start">
+        The widest range of services from $16/hour
+      </h1>
+      <p class="text-muted mb-4 text-center text-md-start">
+        Your trusted partner for spotless spaces! At SqueakyClean, we specialize 
+        in delivering top-notch cleaning solutions tailored to your home, office, 
+        and commercial needs. Our professional team is committed to ensuring every 
+        corner shines, using eco-friendly products and industry-leading techniques.
+        <br><br>
+        Whether it's a one-time deep clean or regular upkeep, we’re here to make 
+        your life easier and your environment healthier. Experience the joy of 
+        a pristine space with SqueakyClean—because a clean place is a happy place!
+        <br><br>
+        Schedule your cleaning today and let us take care of the mess!
+      </p>
+      <div class="text-center text-md-start">
+        <button class="btn btn-outline-dark btn-lg">Book a Service</button>
+      </div>
+    </div>
+
+    <!-- Image Content -->
+    <div class="col-md-6">
+      <img 
+        src="https://res.cloudinary.com/dniamky93/image/upload/v1732243176/Best-Cleaning-Service-Sydney_hwqtts.jpg"
+        alt="Cleaning Service"
+        class="rounded shadow"
+      >
+    </div>
+  </div>
 </div>
-</body>
 </body>
 </html>
