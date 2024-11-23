@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,8 +7,8 @@
 <title>Modal</title>
 </head>
 <body>
-<%@ page import = "classes.LoggedInUser" %>
-<%
+	<%@ page import="classes.LoggedInUser"%>
+	<%
 
     // Get the Referer header from the request
         String referer = request.getHeader("Referer");
@@ -24,7 +24,13 @@ LoggedInUser user = (LoggedInUser) session.getAttribute("user");
         	} 
         	
         	if (session == null  || user == null) { 
+        		
+        		if (referer.contains("register")){ 
+                    response.sendRedirect("../client/register.jsp");
+                    return;
+        		} else {
                 response.sendRedirect("../client/login.jsp");
+        		}
         	} else {
             // Redirect to the originating URL (Referer)
             response.sendRedirect(referer);
