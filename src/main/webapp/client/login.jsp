@@ -96,6 +96,11 @@
 			errTitle = "Invalid Credentials";
 			errMsg = "Invalid Email or Password. Please try again.";
 			break;
+		case "banned":
+			errTitle = "Account Suspended";
+			errMsg = "Your account has been suspended due to violations of our terms of service."
+			+ " If you believe this is a mistake, please contact support at jadproject@zohomail.com.";
+			break;
 		}
 	%>
 	<div id="errorModal" class="modal flex items-center justify-center">
@@ -123,66 +128,65 @@
 	}
 	%>
 
-			<!-- Column for Login Form -->
+	<!-- Column for Login Form -->
 
+	<div class="login-container">
+		<div class="custom-shape shape-1"></div>
+		<div class="custom-shape shape-2"></div>
 
-
-			<div class="login-container">
-				<div class="custom-shape shape-1"></div>
-				<div class="custom-shape shape-2"></div>
-
-				<div class="container mt-5">
-					<div class="row">
-						<!-- Column for Image -->
-						<div class="col-md-4">
-							<div
-								class="container mx-auto relative z-10 image-column  flex items-center justify-center">
-								<img
-									src=https://res.cloudinary.com/dw54pefsm/image/upload/v1731429414/man-clean-oval_u3ecs4.png
-									alt="Big Picture" style="width: 100vh">
-							</div>
-						</div>
-						<!-- Column for Register Form -->
-						<div class="col-md-8">
-							<div class="container mx-auto px-4 relative z-10">
-								<div
-									class="max-w-sm mx-auto bg-white bg-opacity-95 rounded-3xl shadow-xl p-6">
-									<div class="text-center mb-6">
-										<h2 class="text-2xl font-bold text-gray-800 mb-2">
-											SQUEAKYCLEAN</h2>
-										<p class="text-sm text-gray-600">Experience squeaky
-											cleaning services</p>
-									</div>
-
-									<form class="space-y-4" action="<%=contextPath %>/user/login" method="POST">
-										<div class="space-y-3">
-											<div class="mb-3">
-												<label for="email" class="form-label">email</label> <input
-													type="text" class="form-control" id="email" name="email"
-													required>
-											</div>
-											<div class="mb-3">
-												<label for="password" class="form-label">Password</label> <input
-													type="password" class="form-control" id="password"
-													name="password" required>
-											</div>
+		<div class="container mt-5">
+    <div class="row align-items-center">
+        <!-- Column for Image -->
+<div class="col-md-5 d-flex justify-content-center align-items-center">
+    <div class="container mx-auto relative z-10 image-column flex items-center justify-center">
+        <img
+            src="https://res.cloudinary.com/dw54pefsm/image/upload/v1731429414/man-clean-oval_u3ecs4.png"
+            alt="Big Picture"
+            class="img-fluid mx-auto d-block"
+            style="max-height: 400px; width: auto;"
+        >
+    </div>
 </div>
-											<button type="submit"
-												class="submit-btn w-full py-2 px-4 text-white text-sm font-medium hover:bg-opacity-90">
-												Log in</button>
-									</form>
-									<p class="text-center mt-4 text-xs text-gray-600">
-
-										Don't have an account? <a href="./register.jsp"
-											class="text-blue-600 hover:underline">Sign up</a>
-									</p>
-								</div>
+        <!-- Column for Register Form -->
+        <div class="col-md-7">
+ <div class="max-w-2xl mx-auto bg-white bg-opacity-95 rounded-3xl shadow-xl p-6">
+ 							<div class="text-center mb-6">
+								<h2 class="text-2xl font-bold text-gray-800 mb-2">
+									SQUEAKYCLEAN</h2>
+								<p class="text-sm text-gray-600">Experience squeaky cleaning
+									services</p>
 							</div>
+
+							<form class="space-y-4" action="<%=contextPath%>/user/login"
+								method="POST">
+								<div class="space-y-3">
+									<div class="mb-3">
+										<label for="email" class="form-label">email</label> <input
+											type="text" class="form-control" id="email" name="email"
+											required>
+									</div>
+									<div class="mb-3">
+										<label for="password" class="form-label">Password</label> <input
+											type="password" class="form-control" id="password"
+											name="password" required>
+									</div>
+								</div>
+								<button type="submit"
+									class="submit-btn w-full py-2 px-4 text-white text-sm font-medium hover:bg-opacity-90">
+									Log in</button>
+							</form>
+							<p class="text-center mt-4 text-xs text-gray-600">
+
+								Don't have an account? <a href="./register.jsp"
+									class="text-blue-600 hover:underline">Sign up</a>
+							</p>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
+	</div>
 	</div>
 </body>
 </html>
