@@ -15,6 +15,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 // Import Database Connection Class file 
 import servlets.DatabaseConnection;
@@ -50,8 +52,6 @@ public class RegisterServlet extends HttpServlet {
 		// processing
 		String userEmail = request.getParameter("email");
 		String userPhone = request.getParameter("phone");
-		
-		System.out.println("My user EMAIL : " + userEmail);
 
 		String pwd = request.getParameter("password");
 		String confirmPwd = request.getParameter("confirmpassword");
@@ -59,21 +59,45 @@ public class RegisterServlet extends HttpServlet {
 		if (!pwd.equals(confirmPwd)) {
 			System.out.println("Passwords don't match");
 			response.sendRedirect("client/register.jsp?errCode=passwordMismatch");
+			return;
 		}
+		
+		String birthdate = request.getParameter("birthdate"); 
+		if (birthdate != null && !birthdate.isEmpty()) {
+		    try {
+		        LocalDate birthdateDate = LocalDate.parse(birthdate);
+
+		        // Calculate the date 18 years ago
+		        LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+
+		        if (birthdateDate.isBefore(eighteenYearsAgo) || birthdateDate.isEqual(eighteenYearsAgo)) {
+		            System.out.println("older than or exactly 18 years.");
+		        } else {
+					response.sendRedirect("../client/register.jsp?errCode=ageRestricted");
+
+		            System.out.println("younger than 18 years.");
+		            return;
+		        }
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+		
 		try {
 			// Initialize the database
 			Connection con = DatabaseConnection.initializeDatabase();
 
-			PreparedStatement selectStatement = con.prepareStatement("select * from \"user\" where email = ? OR phone = ?");
+			PreparedStatement selectStatement = con
+					.prepareStatement("select * from \"user\" where email = ? OR phone = ?");
 			selectStatement.setString(1, userEmail);
 			selectStatement.setString(2, userPhone);
 			System.out.println(userEmail);
 
 			ResultSet userSet = selectStatement.executeQuery();
-			
-			// if duplicate user exist 
+
+			// if duplicate user exist
 			if (userSet.next()) {
-				System.out.println(userSet.getString(6));
+//				System.out.println(userSet.getString(6));
 				response.sendRedirect("../client/register.jsp?errCode=duplicateEmail");
 				return;
 			} else {
@@ -105,7 +129,7 @@ public class RegisterServlet extends HttpServlet {
 					for (int i = 0, j = 1; i < 6; i++, j++) {
 						// getting datatype
 						System.out.println(databaseValues.get(i).getClass().getName());
-						
+
 						if (i == 3) { // for birthdate
 							java.sql.Date sqlDate = java.sql.Date.valueOf(databaseValues.get(i));
 							insertStatement.setDate(j, sqlDate);
@@ -124,11 +148,13 @@ public class RegisterServlet extends HttpServlet {
 				// Close all the connections
 				selectStatement.close();
 				insertStatement.close();
-				con.close();
-
 			}
+			con.close();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		response.sendRedirect("../client/home.jsp");
 	}
 }
