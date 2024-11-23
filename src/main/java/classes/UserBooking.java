@@ -7,8 +7,8 @@ public class UserBooking {
 	int booking_id;
 	Date date;
 	Time time;
-	double hour_count;
-	String service_id;
+	int hour_count;
+	String service_name;
 	int status_id;
 	int user_id; 
 	int receipt_id; 
@@ -40,13 +40,13 @@ public class UserBooking {
 		this.receipt_id = receipt_id;
 	}
 
-	public UserBooking(Date date, Time time, double hour_count, String service, int status_id, 
+	public UserBooking(Date date, Time time, int hour_count, String service, int status_id, 
 		 int user_id, int booking_id) {
 		super();
 		this.date = date;
 		this.time = time;
 		this.hour_count = hour_count;
-		this.service_id = service;
+		this.service_name = service;
 		this.status_id = status_id;
 		this.booking_id = booking_id; 
 		this.user_id = user_id;
@@ -80,16 +80,16 @@ public class UserBooking {
 		this.status_id = status_id;
 	}
 
-	public void setHour_count(double hour_count) {
+	public void setHour_count(int hour_count) {
 		this.hour_count = hour_count;
 	}
 
-	public String getService_id() {
-		return service_id;
+	public String getService_name() {
+		return service_name;
 	}
 
-	public void setService_id(String service) {
-		this.service_id = service;
+	public void setService_name(String service) {
+		this.service_name= service;
 	}
 
 }
