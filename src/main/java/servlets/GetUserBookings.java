@@ -14,7 +14,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import classes.LoggedInUser;
@@ -23,7 +27,7 @@ import classes.UserBooking;
 /**
  * Servlet implementation class GetUserBookings
  */
-@WebServlet("/GetUserBookings")
+@WebServlet("/userBookings")
 public class GetUserBookings extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -43,35 +47,35 @@ public class GetUserBookings extends HttpServlet {
 			throws ServletException, IOException {
 
 		HttpSession session = request.getSession(false);
+		System.out.println(session);
 		if (session == null) {
 
-			// only 1 response.send can be done at each time
-			// response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User is not logged
-			// in.");
-			response.sendRedirect("./client/login.jsp");
+			response.sendRedirect("./client/login.jsp?errCode=invalidLogin");
 			return;
+		} else {
+
+			LoggedInUser user = new LoggedInUser();
+			user = (LoggedInUser) session.getAttribute("user");
+
+			System.out.println(user);
+			if (user == null) {
+				response.sendRedirect("./client/login.jsp?errCode=invalidLogin");
+				return;
+			}
+
+			int user_id = user.getUser_id();
+			System.out.println("user id in get user bookings " + user_id);
+
+			List<UserBooking> bookings = getBookingsByUserId(user_id);
+			System.out.println("bookings in GetUserBookings" + bookings.size());
+
+			bookings = getBookingsByUserId(user_id);
+
+			// Add bookings to the request scope
+			session.setAttribute("userBookings", bookings);
+
+			response.sendRedirect("./client/home.jsp");
 		}
-
-		LoggedInUser user = new LoggedInUser();
-		user = (LoggedInUser) session.getAttribute("user");
-
-		int user_id = user.getUser_id();
-
-		List<UserBooking> bookings = getBookingsByUserId(user_id);
-		System.out.println("bookings in GetUserBookings" + bookings);
-
-		// Add bookings to the request scope
-		session.setAttribute("bookings", bookings);
-		request.setAttribute("bookings", bookings);
-
-		// Forward to the JSP page
-
-		
-//		RequestDispatcher dispatcher = request.getRequestDispatcher("./client/profile.jsp");
-//		dispatcher.forward(request, response);
-
-		 response.sendRedirect("/ST0510_JAD_Proj/client/home.jsp");
-
 		return;
 	}
 
@@ -79,10 +83,12 @@ public class GetUserBookings extends HttpServlet {
 		// Simulated database call
 
 		List<UserBooking> bookings = new ArrayList<>();
+		LocalDate todayDate = LocalDate.now();
+		LocalTime currentTime = LocalTime.now();
 
 		try {
 			Connection conn = DatabaseConnection.initializeDatabase();
-			String selectStr = "SELECT * FROM \"booking\" WHERE user_id = ?";
+			String selectStr = "SELECT * FROM public.\"booking\" WHERE user_id = ?";
 
 			PreparedStatement userStatement = conn.prepareStatement(selectStr);
 
@@ -91,58 +97,57 @@ public class GetUserBookings extends HttpServlet {
 			ResultSet userSet = userStatement.executeQuery();
 
 			while (userSet.next()) {
+
+				LocalDate fetchedDate = userSet.getDate("date").toLocalDate();
+				LocalTime fetchedTime = userSet.getTime("time").toLocalTime();
+
+				// Compare the date and Time
+				if (fetchedDate.isBefore(todayDate)
+						|| (fetchedDate.isEqual(todayDate) && fetchedTime.isBefore(currentTime))) {
+					String dateStr = "UPDATE booking SET status_id = ?";
+					PreparedStatement dateStatement = conn.prepareStatement(dateStr);
+					dateStatement.setInt(1, 1);
+					int updatedRows = dateStatement.executeUpdate();
+
+					System.out.println("updatedRows " + updatedRows);
+				}
 				UserBooking booking = new UserBooking();
 
 				String bookingServiceName = "";
 
-				// Get all columns from the ResultSet dynamically
-				ResultSetMetaData metaData = userSet.getMetaData();
-				int columnCount = metaData.getColumnCount();
+				int booking_id = userSet.getInt("booking_id");
 
-				for (int i = 1; i <= columnCount; i++) {
+				Time time = userSet.getTime("time");
 
-					// getting the column name from the database
-					String columnName = metaData.getColumnName(i);
+				Date date = userSet.getDate("date");
 
-					// getting the value from the database
-					Object value = userSet.getObject(i);
-					
-					if (columnName.equals("booking_id") || columnName.equals("user_id") ||
-						columnName.equals("receipt_id")) {
-						continue;
+				int hour_count = userSet.getInt("hour_count");
+
+				int status_id = userSet.getInt("status_id");
+				System.out.println("status id " + status_id);
+
+				int service_id = userSet.getInt("service_id");
+
+				try {
+					String serviceStr = "SELECT * FROM service WHERE service_id =?";
+					PreparedStatement serviceStatement = conn.prepareStatement(serviceStr);
+					serviceStatement.setInt(1, service_id);
+					ResultSet serviceName = serviceStatement.executeQuery();
+
+					while (serviceName.next()) {
+						bookingServiceName = serviceName.getString("service_name");
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 
-					// if service_id, fetch the data from the backend
-					if ("service_id".equalsIgnoreCase(columnName)) {
+				booking.setBooking_id(booking_id);
+				booking.setDate(date);
+				booking.setHour_count(hour_count);
+				booking.setService_name(bookingServiceName);
+				booking.setTime(time);
+				booking.setStatus_id(status_id);
 
-						int serviceParam = (int) value;
-						String serviceStr = "SELECT service_name FROM \"service\"" + " WHERE service_id = ?";
-						PreparedStatement serviceStatement = conn.prepareStatement(serviceStr);
-						serviceStatement.setInt(1, serviceParam);
-						ResultSet serviceSet = serviceStatement.executeQuery();
-
-						if (serviceSet.next()) {
-							System.out.println(serviceSet); 
-							// Get the value of service_name column
-							bookingServiceName = serviceSet.getString("service_name");  
-						} else {
-							System.out.println("No service with such id");
-						}
-						serviceSet.close();
-					}
-
-					// getting the fields of the java class
-					Field field = UserBooking.class.getDeclaredField(columnName);
-					field.setAccessible(true); // Make the private field accessible
-
-					if ("service_id".equalsIgnoreCase(columnName)) {
-						field.set(booking, bookingServiceName);
-					} else {
-						// For other fields, set the value directly
-						field.set(booking, value);
-					}
-				} 
-				
 				bookings.add(booking);
 			}
 			userStatement.close();
@@ -154,10 +159,6 @@ public class GetUserBookings extends HttpServlet {
 		return bookings;
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
