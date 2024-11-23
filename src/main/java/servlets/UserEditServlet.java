@@ -30,14 +30,13 @@ public class UserEditServlet extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		String updateColumn = ""; 
 		String editValue = request.getParameter("newDetail"); 
 		HttpSession session = request.getSession(false); 
 		LoggedInUser user = (LoggedInUser) session.getAttribute("user");
 
 		String editField = request.getParameter("inputField");
 		System.out.println(editField); // full_name
-		System.out.println(editValue); // heee
+		System.out.println(editValue);
 		try { 
 			// Initialize the database
 			Connection conn = DatabaseConnection.initializeDatabase();
@@ -74,6 +73,7 @@ public class UserEditServlet extends HttpServlet {
  			        }
 			  }
 			  
+			  conn.close();
 			  response.sendRedirect("./client/profile.jsp");
 		} catch (Exception e) { 
 			e.printStackTrace();
