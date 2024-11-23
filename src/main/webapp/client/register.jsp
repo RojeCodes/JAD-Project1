@@ -7,7 +7,7 @@
 <title>Register</title>
 <%@ include file="include/bootstrap.html"%>
 <%@ include file="include/tailwind.html"%>
-	
+
 </head>
 <style>
 /* :root {
@@ -106,26 +106,31 @@ to {
 </style>
 </head>
 <body>
-<%@include file = "navBar.jsp" %>
+	<%@include file="navBar.jsp"%>
 
 	<%
 	String errCode = request.getParameter("errCode");
-	String errTitle ="";
-	String errMsg = ""; 
+	String errTitle = "";
+	String errMsg = "";
 	if (errCode != null) {
 		switch (errCode) {
 		case "passwordMismatch":
-			errTitle = "Password Mismatch"; 
-			errMsg = "The passwords you entered do not match. Please try again."; 
-					break; 
-		case "duplicateEmail" :
-		errTitle = "Invalid Credentials"; 
-		errMsg = "Please check your credentials and try again."; 
-				break; 	
-		case "ageRestricted" :
-			errTitle = "Age Restricted"; 
-			errMsg =  "You must be at least 18 years old to register or access this service.";
-				break;
+			errTitle = "Password Mismatch";
+			errMsg = "The passwords you entered do not match. Please try again.";
+			break;
+		case "duplicateEmail":
+			errTitle = "Invalid Credentials";
+			errMsg = "Please check your credentials and try again.";
+			break;
+		case "ageRestricted":
+			errTitle = "Age Restricted";
+			errMsg = "You must be at least 18 years old to register or access this service.";
+			break;
+		case "banned":
+			errTitle = "Registration Blocked";
+			errMsg = "Your registration attempt has been blocked. This may be due to a restriction on your account or previous activity."
+			+ "For further assistance, contact support at jadproject@zohomail.com.";
+			break;
 		}
 	%>
 	<div id="errorModal" class="modal flex items-center justify-center">
@@ -140,7 +145,7 @@ to {
 							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
 				</div>
-				<h3 class="text-lg font-medium text-gray-900 mb-2"><%=errTitle %></h3>
+				<h3 class="text-lg font-medium text-gray-900 mb-2"><%=errTitle%></h3>
 				<p class="text-sm text-gray-600 mb-4"><%=errMsg%></p>
 				<form method="POST" action="modal.jsp">
 					<button type="submit" id="closebtn"
@@ -160,28 +165,28 @@ to {
 
 		<div class="container mt-5">
 			<div class="row">
-				<!-- Column for Image -->
-				<div class="col-md-4">
-					<div
-						class="container mx-auto relative z-10 image-column  flex items-center justify-center">
-						<img
-							src=https://res.cloudinary.com/dw54pefsm/image/upload/v1731429414/man-clean-oval_u3ecs4.png
-							alt="Big Picture" style="width: 100vh">
-					</div>
-				</div>
-				<!-- Column for Register Form -->
-				<div class="col-md-8">
-					<div class="container mx-auto px-4 relative z-10">
-						<div
-							class="max-w-sm mx-auto bg-white bg-opacity-95 rounded-3xl shadow-xl p-6">
+        <!-- Column for Image -->
+<div class="col-md-5 d-flex justify-content-center align-items-center">
+    <div class="container mx-auto relative z-10 image-column flex items-center justify-center">
+        <img
+            src="https://res.cloudinary.com/dw54pefsm/image/upload/v1731429414/man-clean-oval_u3ecs4.png"
+            alt="Big Picture"
+            class="img-fluid mx-auto d-block"
+            style="max-height: auto; width: auto;"
+        >
+    </div>
+</div>
+        <!-- Column for Register Form -->
+        <div class="col-md-7">
+ <div class="max-w-2xl mx-auto bg-white bg-opacity-95 rounded-3xl shadow-xl p-6 relative z-10">
 							<div class="text-center mb-6">
 								<h2 class="text-2xl font-bold text-gray-800 mb-2">
 									SQUEAKYCLEAN</h2>
-								<p class="text-sm text-gray-600">Experience squeaky
-									cleaning services</p>
+								<p class="text-sm text-gray-600">Experience squeaky cleaning
+									services</p>
 							</div>
 
-							<form class="space-y-4" action="<%=contextPath %>/user/register"
+							<form class="space-y-4" action="<%=contextPath%>/user/register"
 								method="POST">
 								<div class="space-y-3">
 									<div class="mb-3">
