@@ -33,6 +33,11 @@ public class UserEditServlet extends HttpServlet {
 		String editValue = request.getParameter("newDetail"); 
 		HttpSession session = request.getSession(false); 
 		LoggedInUser user = (LoggedInUser) session.getAttribute("user");
+		
+		if (user == null) { 
+			response.sendRedirect("./client/login.jsp?errCode=invalidLogin");
+			return;
+		}
 
 		String editField = request.getParameter("inputField");
 		System.out.println(editField); // full_name
@@ -70,6 +75,9 @@ public class UserEditServlet extends HttpServlet {
 			        case "email" : 
 			        	user.setEmail(editValue);
 			        	break; 
+			        case "address" :
+			        	user.setAddress(editValue);
+			        	break;
  			        }
 			  }
 			  
