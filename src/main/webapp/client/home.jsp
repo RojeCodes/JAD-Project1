@@ -19,6 +19,43 @@
 <body class="bg-dark">
 <%@ include file="include/bootstrap.html" %>
 <%@ include file="navBar.jsp" %>
+
+<%
+	String code = request.getParameter("code");
+	String title = "";
+	String msg = "";
+	if (code != null) {
+		switch (code) {
+		case "successfulRegistration":
+			title = "Registration Successful";
+			msg = "Please log in to access your account.";
+			break;
+		}
+	%>
+	<div id="errorModal" class="modal flex items-center justify-center">
+		<div class="modal-content w-80 p-6 mx-4">
+			<div class="text-center">
+				<div class="mb-4">
+					<svg class="mx-auto h-12 w-12 text-green-500" fill="none"
+						stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+				</div>
+				<h3 class="text-lg font-medium text-gray-900 mb-2"><%=title%></h3>
+				<p class="text-sm text-gray-600 mb-4"><%=msg%></p>
+				<form method="POST" action="modal.jsp">
+					<button type="submit" id="closebtn"
+						class="w-full py-2 px-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+						Close</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<%
+	}
+	%>
+
 <div class="container bg-white py-4">
   <div class="row align-items-center">
     <!-- Text Content -->
