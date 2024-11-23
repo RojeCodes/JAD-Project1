@@ -4,20 +4,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
-<!-- Bootstrap CSS -->
-<link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-
-<!-- Tailwind CSS -->
-<link
-	href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-	rel="stylesheet">
-	
-	<!-- Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
+<title>Register</title>
+<%@ include file="include/bootstrap.html"%>
+<%@ include file="include/tailwind.html"%>
 	
 </head>
 <style>
@@ -99,7 +88,7 @@
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	animation: modalSlideDown 0.3s ease-out;
 }
-
+/* 
 @
 keyframes modalSlideDown {from { transform:translateY(-50px);
 	opacity: 0;
@@ -113,7 +102,7 @@ to {
 }
 .error-input {
 	border-color: #EF4444;
-}
+} */
 </style>
 </head>
 <body>
@@ -133,6 +122,10 @@ to {
 		errTitle = "Invalid Credentials"; 
 		errMsg = "Please check your credentials and try again."; 
 				break; 	
+		case "ageRestricted" :
+			errTitle = "Age Restricted"; 
+			errMsg =  "You must be at least 18 years old to register or access this service.";
+				break;
 		}
 	%>
 	<div id="errorModal" class="modal flex items-center justify-center">
@@ -188,7 +181,7 @@ to {
 									cleaning services</p>
 							</div>
 
-							<form class="space-y-4" action="/ST0510_JAD_Proj/user/register"
+							<form class="space-y-4" action="<%=contextPath %>/user/register"
 								method="POST">
 								<div class="space-y-3">
 									<div class="mb-3">
