@@ -173,12 +173,12 @@ public class CategoryServlet extends HttpServlet {
 				updateCategory(conn, category_id, category_name, description, img_url);
 				break;
 			}
+		}
 
-			try {
-				conn.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		try {
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		// call doGet again to get category data
 		doGet(request, response);
