@@ -118,7 +118,7 @@ body {
 	case "full_name":
 		inputName = "full_name";
 		inputType = "text";
-		placeHolderValue = full_name;
+		placeHolderValue = full_name.toString();
 		break;
 	}
 	%>
@@ -134,7 +134,7 @@ body {
 					<input type="hidden" name="inputField" value=<%=btn%>> <span
 						class="input-group-text bg-transparent border-0 fw-bold"> <%=btn%>
 					</span> <input type=<%=inputType%> class="form-control bg-transparent"
-						name="newDetail" value=<%=placeHolderValue%>>
+						name="newDetail" value="<%=placeHolderValue%>">
 					<div class="row align-items-center">
 						<div class="col-md-6 d-flex gap-2 my-3">
 							<button type="submit" id="editbtn"
