@@ -80,14 +80,19 @@ public class GetUserBookings extends HttpServlet {
 	}
 
 	private List<UserBooking> getBookingsByUserId(int userId) {
-		// Simulated database call
 
 		List<UserBooking> bookings = new ArrayList<>();
 		LocalDate todayDate = LocalDate.now();
 		LocalTime currentTime = LocalTime.now();
-
+		Connection conn = null;
+		
+		try { 
+		 conn = DatabaseConnection.initializeDatabase();
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		
 		try {
-			Connection conn = DatabaseConnection.initializeDatabase();
 			String selectStr = "SELECT * FROM public.\"booking\" WHERE user_id = ?";
 
 			PreparedStatement userStatement = conn.prepareStatement(selectStr);
