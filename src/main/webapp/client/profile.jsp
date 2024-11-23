@@ -91,6 +91,7 @@ body {
 	String email = user.getEmail();
 	String birthdate = user.getBirthdate();
 	String phone = user.getPhone();
+	String address = user.getAddress();
 	String inputName = "";
 	String placeHolderValue = "";
 	String inputType = "";
@@ -116,9 +117,14 @@ body {
 		placeHolderValue = phone;
 		break;
 	case "full_name":
-		inputName = "full_name";
+		inputName = "full name";
 		inputType = "text";
 		placeHolderValue = full_name.toString();
+		break;
+	case "address" :
+		inputName = "address"; 
+		inputType = "text"; 
+		placeHolderValue = address;
 		break;
 	}
 	%>
@@ -234,6 +240,19 @@ body {
 											</button>
 										</form>
 									</div>
+									
+									<div class="input-group mb-3 rounded-3 bg-white">
+										<span class="input-group-text bg-transparent border-0 fw-bold">Address</span>
+										<input type="address" class="form-control bg-transparent"
+											value="<%=address%>" readonly>
+										<form method="POST">
+											<button id="editButton" name="btn" value="address"
+												class="text-black rounded-full p-3">
+												<i class="fas fa-pen"></i>
+											</button>
+										</form>
+									</div>
+									
 								</div>
 							</div>
 						</div>
