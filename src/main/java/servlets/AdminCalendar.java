@@ -3,9 +3,12 @@ package servlets;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -13,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -20,49 +24,268 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import classes.Category;
+import classes.LoggedInUser;
 import classes.UserBooking;
 
 /**
  * Servlet implementation class AdminCalendar
  */
-@WebServlet("/AdminCalendar")
+@WebServlet("/adminDashboard")
 public class AdminCalendar extends HttpServlet {
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		String selectedDate = (String) request.getParameter("selectedDate");
+		System.out.println("selectedDate" + selectedDate);
+		Connection conn = null;
+		List<UserBooking> bookings = new ArrayList<>();
+		java.sql.Date sqlDate = null;
+		LocalDate selectedLocalDate = LocalDate.now();
+		Map<LocalDate, List<UserBooking>> bookingMap = new HashMap<>();
+
+		try {
+			conn = DatabaseConnection.initializeDatabase();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			sqlDate = java.sql.Date.valueOf(selectedDate);
+			selectedLocalDate = sqlDate.toLocalDate();
+
+			String selectedDateStr = "SELECT * FROM \"booking\" WHERE date = ?";
+
+			PreparedStatement userStatement = conn.prepareStatement(selectedDateStr);
+
+			userStatement.setDate(1, sqlDate);
+
+			ResultSet bookingSet = userStatement.executeQuery();
+
+			while (bookingSet.next()) {
+				String bookingServiceName = "";
+				int service_id = 0;
+
+				service_id = bookingSet.getInt("service_id");
+
+				String serviceStr = "SELECT service_name FROM \"service\" WHERE service_id = ?";
+				PreparedStatement serviceStatement = conn.prepareStatement(serviceStr);
+				serviceStatement.setInt(1, service_id);
+				ResultSet serviceSet = serviceStatement.executeQuery();
+
+				if (serviceSet.next()) {
+					// Get the value of service_name column
+					bookingServiceName = serviceSet.getString("service_name");
+				} else {
+					System.out.println("No service with such id");
+				}
+				serviceSet.close();
+
+				UserBooking booking = new UserBooking();
+
+				booking.setDate(bookingSet.getDate("date"));
+				booking.setTime(bookingSet.getTime("time"));
+				booking.setService_name(bookingServiceName);
+				booking.setHour_count(bookingSet.getInt("hour_count"));
+
+				bookings.add(booking);
+
+				// Check if the bookingDate is already present in the map
+				if (!bookingMap.containsKey(selectedLocalDate)) {
+					// If not, initialize a new list and add the booking
+					List<UserBooking> newBookingList = new ArrayList<>();
+					newBookingList.add(booking);
+					bookingMap.put(selectedLocalDate, newBookingList);
+				} else {
+					// If the date is already in the map, get the booking list using the date as the
+					// key
+					// add the booking to the existing retrieved list
+					List<UserBooking> existingBookingList = bookingMap.get(selectedLocalDate);
+					existingBookingList.add(booking);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		request.setAttribute("selectedBookings", bookingMap);
+
+		doGet(request, response);
+	}
+
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// Default to current date
-		LocalDate currentDate = LocalDate.now();
+		HttpSession session = request.getSession(false);
+
+		if (session == null) {
+			response.sendRedirect("./client/adminDashboard.jsp?errCode=invalidLogin");
+			return;
+		} else {
+			LoggedInUser user = (LoggedInUser) session.getAttribute("user");
+			if (user == null) {
+				response.sendRedirect("./client/adminDashboard.jsp?errCode=invalidLogin");
+				return;
+			} else if (user.getRole_id() == 2) {
+				response.sendRedirect("./client/adminDashboard.jsp?errCode=unauthorized");
+				return;
+			}
+		}
+
+		// -----------------------------
+		// ADMIN STATS
+		// -----------------------------
+
+		// BOOKING THIS MONTH
+
+		// config
+		LocalDate todayDate = LocalDate.now();
+		int thisMonthsBookingCount = 0;
+		int thisYearBookingCount = 0;
+		int upcomingBookingCount = 0;
+
+		Connection conn = null;
+		try {
+			conn = DatabaseConnection.initializeDatabase();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			String statStr = "SELECT COUNT(*) AS rowcount FROM \"booking\" WHERE date >= ? AND date <= ?";
+
+			PreparedStatement userStatement = conn.prepareStatement(statStr);
+
+			userStatement.setDate(1, java.sql.Date.valueOf(todayDate.withDayOfMonth(1))); // Start of the month
+			userStatement.setDate(2, java.sql.Date.valueOf(todayDate.withDayOfMonth(todayDate.lengthOfMonth()))); // End
+																													// of
+																													// the
+			// month
+			ResultSet countSet = userStatement.executeQuery();
+
+			if (countSet.next()) {
+				int rowCount = countSet.getInt("rowcount");
+				thisMonthsBookingCount = rowCount;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// BOOKING THIS YEAR
+
+		try {
+			String statStr = "SELECT COUNT(*) AS rowcount FROM \"booking\" WHERE date >= ? AND date <= ?";
+
+			PreparedStatement userStatement = conn.prepareStatement(statStr);
+
+			userStatement.setDate(1, java.sql.Date.valueOf(todayDate.withDayOfYear(1))); // Start of the year
+			userStatement.setDate(2, java.sql.Date.valueOf(todayDate.withDayOfYear(todayDate.lengthOfYear()))); // End
+																												// of
+																												// the
+			// year
+			ResultSet countSet = userStatement.executeQuery();
+
+			if (countSet.next()) {
+				int rowCount = countSet.getInt("rowcount");
+				thisYearBookingCount = rowCount;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// UPCOMING BOOKING COUNT
+
+		try {
+			String statStr = "SELECT COUNT(*) AS rowcount FROM booking WHERE status_id = ?";
+
+			PreparedStatement userStatement = conn.prepareStatement(statStr);
+
+			userStatement.setInt(1, 2);
+			ResultSet countSet = userStatement.executeQuery();
+
+			if (countSet.next()) {
+				int rowCount = countSet.getInt("rowcount");
+				upcomingBookingCount = rowCount;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// -----------------------------
+		// CALENDAR
+		// -----------------------------
+
+// localDate to pass in generateCalendarMatrix 
+		// currentDate to pass in getBookingsForMonth
+		String clickedDate = request.getParameter("selectedDate");
+		System.out.println("clicked date " + clickedDate);
+
+		LocalDate localDate = LocalDate.now();
+		java.sql.Date currentDate = java.sql.Date.valueOf(localDate);
 
 		// Check for month and year parameters
 		String monthParam = request.getParameter("month");
 		String yearParam = request.getParameter("year");
+		System.out.println("Month Param " + monthParam);
+		System.out.println(yearParam);
 
 		try {
+
+			// localDate is for calendar
 			if (monthParam != null && yearParam != null) {
 				int month = Integer.parseInt(monthParam);
 				int year = Integer.parseInt(yearParam);
+				localDate = LocalDate.of(year, month, 1);
+				System.out.println("line 242 " + localDate);
+				currentDate = java.sql.Date.valueOf(localDate);
+				System.out.println("line 244 " + currentDate);
 
-				// whenever the user goes next or go previous,
-				// the servlet is called and current year and month will add to the parameters
-				currentDate = LocalDate.of(year, month, 1);
 			}
 		} catch (Exception e) {
-			// If parsing fails, fall back to current date
-			currentDate = LocalDate.now();
+			e.printStackTrace();
+			// If there's an error, default to current month
+			localDate = LocalDate.now();
 		}
 
-		// Generate calendar data
-		List<List<LocalDate>> calendarMatrix = generateCalendarMatrix(currentDate);
+		List<List<LocalDate>> calendarMatrix = generateCalendarMatrix(localDate);
 
-		// Get bookings for the month
-		Map<LocalDate, List<UserBooking>> bookings = getBookingsForMonth(currentDate);
+		// currentDate - get all bookings for the month
+		Map<LocalDate, List<UserBooking>> bookings = getBookingsForMonth(currentDate, conn);
 
-		// Set attributes for JSP
-		request.setAttribute("currentDate", currentDate);
-		request.setAttribute("calendarMatrix", calendarMatrix);
-		request.setAttribute("adminBookings", bookings);
+		System.out.println("adminBookings  " + bookings.isEmpty());
+		// -----------------------------
+		// SETTING ATTRIBUTES
+		// -----------------------------
+
+		request.setAttribute("thisMonthsBookingCount", thisMonthsBookingCount);
+		request.setAttribute("thisYearBookingCount", thisYearBookingCount);
+		request.setAttribute("upcomingBookingCount", upcomingBookingCount);
+
+		List<List<LocalDate>> sessionCalendar = (List<List<LocalDate>>) session.getAttribute("calendarMatrix");
+
+		System.out.println(sessionCalendar);
+		if (sessionCalendar == null) {
+			session.setAttribute("calendarMatrix", calendarMatrix);
+			session.setAttribute("currentDate", localDate);
+			session.setAttribute("adminBookings", bookings);
+
+		} else if (sessionCalendar != null && monthParam != null && yearParam != null) {
+			session.setAttribute("calendarMatrix", calendarMatrix);
+			session.setAttribute("currentDate", localDate);
+			session.setAttribute("adminBookings", bookings);
+		} else if (sessionCalendar != null && monthParam == null && yearParam == null) {}
+
 		RequestDispatcher dispatcher = request.getRequestDispatcher("./client/adminDashboard.jsp");
 		dispatcher.forward(request, response);
 	}
+
+	// ------------------------------
+	// FOR CALENDAR AND BOOKING
+	// ------------------------------
 
 	// Generate a 2D list where each inner list represents a week of the month,
 	// and the outer list represents the entire month (a grid of weeks).
@@ -129,97 +352,75 @@ public class AdminCalendar extends HttpServlet {
 		return monthlyCalendar;
 	}
 
-	private Map<LocalDate, List<UserBooking>> getBookingsForMonth(LocalDate date) {
+	private Map<LocalDate, List<UserBooking>> getBookingsForMonth(Date date, Connection conn) {
 
 		// Map key - date
 		// value - time and booking details
 		Map<LocalDate, List<UserBooking>> bookings = new HashMap<>();
+		LocalDate myBookingDate = ((java.sql.Date) date).toLocalDate();
 
 		try {
-			Connection conn = DatabaseConnection.initializeDatabase();
 			String selectStr = "SELECT * FROM \"booking\" WHERE date >= ? AND date <= ?";
 
 			PreparedStatement userStatement = conn.prepareStatement(selectStr);
+//
+			userStatement.setDate(1, java.sql.Date.valueOf(myBookingDate.withDayOfMonth(1))); // Start of the month
+			userStatement.setDate(2,
+					java.sql.Date.valueOf(myBookingDate.withDayOfMonth(myBookingDate.lengthOfMonth()))); // End of the
+			// month
 
-			userStatement.setDate(1, java.sql.Date.valueOf(date.withDayOfMonth(1))); // Start of the month
-			userStatement.setDate(2, java.sql.Date.valueOf(date.withDayOfMonth(date.lengthOfMonth()))); // End of the
-																										// month
-
-			// this gets all the data in the month 
+			System.out.println("my booking date : " + myBookingDate);
+			// this gets all the data in the month
 			ResultSet bookingSet = userStatement.executeQuery();
 
-			// in this month 
+			// in this month
 			while (bookingSet.next()) {
-			    
-			    // this creates userBooking objs for each booking 
-			    UserBooking booking = new UserBooking();
 
-			    // turn the value from the column to LocalDate
-			    LocalDate bookingDate = date;
-			    String bookingServiceName = "";
+				// this creates userBooking objs for each booking
+				UserBooking booking = new UserBooking();
 
-			    // Get all columns from the ResultSet dynamically
-			    ResultSetMetaData metaData = bookingSet.getMetaData();
-			    int columnCount = metaData.getColumnCount();
+				// bookingDate (LocalDate)
+				LocalDate bookingDate = myBookingDate;
+				String bookingServiceName = "";
+				int service_id = 0;
 
-			    for (int i = 1; i <= columnCount; i++) {
+				service_id = bookingSet.getInt("service_id");
 
-			        // getting the column name from the database
-			        String columnName = metaData.getColumnName(i);
+				String serviceStr = "SELECT service_name FROM \"service\" WHERE service_id = ?";
+				PreparedStatement serviceStatement = conn.prepareStatement(serviceStr);
+				serviceStatement.setInt(1, service_id);
+				ResultSet serviceSet = serviceStatement.executeQuery();
 
-			        // getting the value from the database
-			        Object value = bookingSet.getObject(i);
+				if (serviceSet.next()) {
+					// Get the value of service_name column
+					bookingServiceName = serviceSet.getString("service_name");
+				} else {
+					System.out.println("No service with such id");
+				}
+				serviceSet.close();
 
-			        if (columnName.equals("receipt_id")) {
-			            continue;
-			        }
+				// get the booking date from the db
+				bookingDate = bookingSet.getDate("date").toLocalDate();
+				booking.setDate(date);
+				booking.setHour_count(bookingSet.getInt("hour_count"));
+				booking.setTime(bookingSet.getTime("time"));
+				booking.setService_name(bookingServiceName);
 
-			        // if service_id, fetch the data from the backend
-			        if ("service_id".equalsIgnoreCase(columnName)) {
-			            int serviceParam = (int) value;
-			            String serviceStr = "SELECT service_name FROM \"service\" WHERE service_id = ?";
-			            PreparedStatement serviceStatement = conn.prepareStatement(serviceStr);
-			            serviceStatement.setInt(1, serviceParam);
-			            ResultSet serviceSet = serviceStatement.executeQuery();
-
-			            if (serviceSet.next()) {
-			                // Get the value of service_name column
-			                bookingServiceName = serviceSet.getString("service_name");
-			            } else {
-			                System.out.println("No service with such id");
-			            }
-			            serviceSet.close();
-			        }
-
-			        // getting the fields of the java class
-			        Field field = UserBooking.class.getDeclaredField(columnName);
-			        field.setAccessible(true); // Make the private field accessible
-
-			        if ("service_id".equalsIgnoreCase(columnName)) {
-			            field.set(booking, bookingServiceName);
-			        } else {
-			            // For other fields, set the value directly
-			            field.set(booking, value);
-			        }
-			    }
-
-			    // get the booking date from the db 
-			    bookingDate = bookingSet.getDate("date").toLocalDate();
-			    
-			    // Check if the bookingDate is already present in the map
-			    if (!bookings.containsKey(bookingDate)) {
-			        // If not, initialize a new list and add the booking
-			        List<UserBooking> newBookingList = new ArrayList<>();
-			        newBookingList.add(booking);
-			        bookings.put(bookingDate, newBookingList);
-			    } else {
-			        // If the date is already in the map, get the booking list using the date as the key 
-			    	// add the booking to the existing retrieved list 
-			        List<UserBooking> existingBookingList = bookings.get(bookingDate);
-			        existingBookingList.add(booking);
-			    }
+				// Check if the bookingDate is already present in the map
+				if (!bookings.containsKey(bookingDate)) {
+					// If not, initialize a new list and add the booking
+					List<UserBooking> newBookingList = new ArrayList<>();
+					newBookingList.add(booking);
+					bookings.put(bookingDate, newBookingList);
+				} else {
+					// If the date is already in the map, get the booking list using the date as the
+					// key
+					// add the booking to the existing retrieved list
+					List<UserBooking> existingBookingList = bookings.get(bookingDate);
+					existingBookingList.add(booking);
+				}
 			}
-			
+
 			userStatement.close();
 			conn.close();
 		} catch (Exception e) {
