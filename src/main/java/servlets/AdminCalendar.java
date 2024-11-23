@@ -110,6 +110,12 @@ public class AdminCalendar extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		request.setAttribute("selectedBookings", bookingMap);
 
@@ -259,6 +265,14 @@ public class AdminCalendar extends HttpServlet {
 		Map<LocalDate, List<UserBooking>> bookings = getBookingsForMonth(currentDate, conn);
 
 		System.out.println("adminBookings  " + bookings.isEmpty());
+		
+		// close connection 
+		try {
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// -----------------------------
 		// SETTING ATTRIBUTES
 		// -----------------------------
@@ -425,7 +439,6 @@ public class AdminCalendar extends HttpServlet {
 			}
 
 			userStatement.close();
-			conn.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
