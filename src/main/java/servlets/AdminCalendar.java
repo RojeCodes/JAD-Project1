@@ -84,6 +84,7 @@ public class AdminCalendar extends HttpServlet {
 
 				UserBooking booking = new UserBooking();
 
+				booking.setBooking_id(bookingSet.getInt("booking_id"));
 				booking.setDate(bookingSet.getDate("date"));
 				booking.setTime(bookingSet.getTime("time"));
 				booking.setService_name(bookingServiceName);
@@ -158,8 +159,7 @@ public class AdminCalendar extends HttpServlet {
 			PreparedStatement userStatement = conn.prepareStatement(statStr);
 
 			userStatement.setDate(1, java.sql.Date.valueOf(todayDate.withDayOfMonth(1))); // Start of the month
-			userStatement.setDate(2, java.sql.Date.valueOf(todayDate.withDayOfMonth(todayDate.lengthOfMonth()))); // End
-																													// of
+			userStatement.setDate(2, java.sql.Date.valueOf(todayDate.withDayOfMonth(todayDate.lengthOfMonth()))); // End																// of
 																													// the
 			// month
 			ResultSet countSet = userStatement.executeQuery();
@@ -199,7 +199,7 @@ public class AdminCalendar extends HttpServlet {
 		// UPCOMING BOOKING COUNT
 
 		try {
-			String statStr = "SELECT COUNT(*) AS rowcount FROM booking WHERE status_id = ?";
+			String statStr = "SELECT COUNT(*) AS rowcount FROM public.\"booking\" WHERE status_id = ?";
 
 			PreparedStatement userStatement = conn.prepareStatement(statStr);
 
@@ -209,6 +209,8 @@ public class AdminCalendar extends HttpServlet {
 			if (countSet.next()) {
 				int rowCount = countSet.getInt("rowcount");
 				upcomingBookingCount = rowCount;
+				System.out.println("rowCount : " + rowCount);
+				System.out.println("upcomingBookingCount : " + upcomingBookingCount);
 			}
 
 		} catch (Exception e) {
@@ -401,6 +403,7 @@ public class AdminCalendar extends HttpServlet {
 
 				// get the booking date from the db
 				bookingDate = bookingSet.getDate("date").toLocalDate();
+				booking.setBooking_id(bookingSet.getInt("booking_id"));
 				booking.setDate(date);
 				booking.setHour_count(bookingSet.getInt("hour_count"));
 				booking.setTime(bookingSet.getTime("time"));
