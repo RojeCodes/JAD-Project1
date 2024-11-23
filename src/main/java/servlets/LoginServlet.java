@@ -1,7 +1,9 @@
 package servlets;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import classes.LoggedInUser;
+import classes.UserBooking;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,13 +13,18 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Servlet implementation class LoginServlet
@@ -28,116 +35,105 @@ public class LoginServlet extends HttpServlet {
 		super();
 	}
 
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		HttpSession oldSession = request.getSession(false);
+		System.out.println("oldSession " + oldSession);
+
+		String action = (String) request.getParameter("action");
+
+		System.out.print(action);
+		if (oldSession != null && action.equals("logOut")) {
+			oldSession.invalidate();
+
+			response.sendRedirect("../client/home.jsp");
+			return;
+		} else if (action == null ) {
+			response.sendRedirect("../client/login.jsp");
+			return;
+		}
+	}
+
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
+		HttpSession oldSession = request.getSession(false);
+		if (oldSession != null) {
+			oldSession.invalidate();
+		}
+		
 		// config
-		Enumeration<String> params = request.getParameterNames();
-		String paramName = "";
-		String[] paramValues = null;
-		ArrayList<String> databaseValues = new ArrayList<>();
-		LoggedInUser user = new LoggedInUser();
+		String email = request.getParameter("email");
+		String password = request.getParameter("password");
 
+		int user_id = 0;
+		String full_name = "";
+		int role_id = 0;
+		String birthdate = "";
+		String address = "";
+		String phone = "";
+		
+		LoggedInUser user = new LoggedInUser();
+		
 		HttpSession session = request.getSession();
-		session.setMaxInactiveInterval(600);
+		session.setMaxInactiveInterval(3600);
+		
 		try {
 			// Initialize the database
 			Connection conn = DatabaseConnection.initializeDatabase();
-			
-	          Statement stmt = conn.createStatement();
 
-			String selectStr = "SELECT * FROM \"user\" where email=? AND password=?";
+			String selectStr = "SELECT * FROM \"user\" WHERE \"email\" = ? AND \"password\" = ?";
 			PreparedStatement userStatement = conn.prepareStatement(selectStr);
 
-			if (params.hasMoreElements()) {
+			userStatement.setString(1, email);
 
-				while (params.hasMoreElements()) {
-					// get parameter name to get parameter value accordingly
-					paramName = (String) params.nextElement();
-					// get parameter value
-					paramValues = request.getParameterValues(paramName);
-
-					System.out.println(paramName + ": " + request.getParameter(paramName));
-
-					// add to array in order
-					for (int i = 0; i < paramValues.length; i++) {
-						databaseValues.add(paramValues[i].toString());
-					}
-				}
-			} else {
-				System.out.println("No element in params");
-			}
-
-			for (int i = 0, j = 1; i < databaseValues.size(); i++, j++) {
-				// getting datatype
-				System.out.println(databaseValues.get(i).getClass().getName());
-				userStatement.setString(j, databaseValues.get(i));
-			}
+			userStatement.setString(2, password);
 
 			// execute statement
 			ResultSet userSet = userStatement.executeQuery();
 
-			// data processing 
-			if (userSet.next()) {
-				// Get all columns from the ResultSet dynamically
-				ResultSetMetaData metaData = userSet.getMetaData();
-				int columnCount = metaData.getColumnCount();
+			System.out.print(userSet);
 
-				for (int i = 1; i <= columnCount; i++) {
+			if (userSet != null) {
+				System.out.println("ResultSet initialized successfully.");
+			} else {
+				System.out.println("ResultSet is null.");
+			}
 
-					// getting the column name from the database
-					String columnName = metaData.getColumnName(i);
+			// data processing
+			while (userSet.next()) {
 
-					// getting the value from the database
-					Object value = userSet.getObject(i);
+				user_id = userSet.getInt("user_id");
+				full_name = userSet.getString("full_name");
+				role_id = userSet.getInt("role_id");
+				birthdate = userSet.getString("birthdate"); 
+				address = userSet.getString("address");
+				phone = userSet.getString("phone"); 
+			}
 
-					// Skip this column
-					if ("password".equalsIgnoreCase(columnName)) {
-						continue;
-					}
-
-					try {
-						// getting the fields of the java class
-						Field field = LoggedInUser.class.getDeclaredField(columnName);
-						field.setAccessible(true); // Make the private field accessible
-
-						
-						// if birthdate
-						if ("birthdate".equalsIgnoreCase(columnName)) {
-							// since the data fetched from the database is in sql.Date,
-							// we have to change it to String
-							String birthdateStr = value.toString(); // yyyy-mm-dd format
-
-							field.set(user, birthdateStr); // Set the value as a String
-
-						} else if ("phone".equalsIgnoreCase(columnName)) { 
-							String phoneStr = value.toString().replaceAll("\\s", ""); 
-							field.set(user, phoneStr);
-						} else {
-							// For other fields, set the value directly
-							field.set(user, value);
-						}
-					} catch (NoSuchFieldException | IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				}
+				System.out.print(user_id);
+				
+				user.setUser_id(user_id);
+				user.setFull_name(full_name.toString());
+				user.setbirthdate(birthdate); 
+				user.setAddress(address);
+				user.setPhone(phone);
+				user.setRole_id(role_id);
+				user.setEmail(email);
+				
+				// Forward to the JSP page
 				
 				session.setAttribute("user", user);
-				session.setMaxInactiveInterval(30 * 60); // 30 mins 
-				
-				if (user.getRole_id() == 1) {
-					response.sendRedirect("../AdminCalendar");
-				} else {
-					response.sendRedirect("../GetUserBookings");
-				}
-			}
 
-			else {
-				// user with the email and password not found
-				response.sendRedirect("../client/login.jsp?errCode=invalidLogin");
-			}
-			// Close all the connections
-			userStatement.close();
+				if (role_id == 1) {
+					response.sendRedirect("../adminDashboard");
+					return;
+				} else if (role_id == 2) {
+					System.out.println("Go to get user bookings");
+					response.sendRedirect("../userBookings");
+					return;
+				}
 			conn.close();
 
 		} catch (SQLException | ClassNotFoundException e) {
