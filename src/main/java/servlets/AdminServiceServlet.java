@@ -192,7 +192,9 @@ public class AdminServiceServlet extends HttpServlet {
 				if (category_id_str != null) {
 					category_id = Integer.parseInt(category_id_str);
 				}
+				if (price_str != null) {
 				price = Double.parseDouble(price_str);
+				}
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			}
