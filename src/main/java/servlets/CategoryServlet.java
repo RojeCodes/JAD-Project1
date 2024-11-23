@@ -99,6 +99,7 @@ public class CategoryServlet extends HttpServlet {
 				category.setImg_url(userSet.getString("img_url"));
 				categories.add(category);
 			}
+			conn.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -171,6 +172,12 @@ public class CategoryServlet extends HttpServlet {
 				}
 				updateCategory(conn, category_id, category_name, description, img_url);
 				break;
+			}
+
+			try {
+				conn.close();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		// call doGet again to get category data
