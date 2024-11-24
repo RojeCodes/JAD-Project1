@@ -1,5 +1,13 @@
 package servlets;
 
+
+/*Author :IDIA ROJE ANGELO PETROLA 
+Adm No : 2342335
+Class : DIT/FT/2B/01
+Date : 25/11/2024
+Description : ST0510-JAD-Assignment1
+*/
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -51,23 +59,55 @@ public class ReviewServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		List<Review> reviews = new ArrayList<>();
+		System.out.println("doPost called in ReviewServlet");////////////////
+		try {
+			int star_count = Integer.parseInt(request.("rating"));
+			String title = request.getParameter("title");
+			String description = request.getParameter("description");
+			int booking_id = Integer.parseInt(request.getParameter("booking_id"));
+			
+			System.out.println("Rating: " + star_count);///////////////////
+			System.out.println("Title: " + title);/////////////////////
+			System.out.println("Description: " + description);//////////////////////
+			System.out.println("Booking ID: " + booking_id);////////////////////////
+
+			Connection conn = DatabaseConnection.initializeDatabase();
+			System.out.println("Database Connection established and parameters retrieved")///////////////
+			String selectStr = "INSERT INTO review(star_count, review_title, description, booking_id) VALUES (?,?,?,?);";
+
+			PreparedStatement userStatement = conn.prepareStatement(selectStr);
+			
+			userStatement.setInt(1, star_count);
+			userStatement.setString(2, title);
+			userStatement.setString(3, description);
+			userStatement.setInt(4, booking_id);
+			
+			int rowsAffected = userStatement.executeUpdate();
+			System.out.println("Query executed successfully. Rows affected: " + rowsAffected);
+			
+			conn.close();
+
+			request.setAttribute("reviewSubmitted", true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	    request.getRequestDispatcher("./client/profile.jsp").forward(request, response);
 	}
 
 	private List<Review> getReviews() {
 		System.out.println("getReviews() called");
 		List<Review> reviews = new ArrayList<>();
-		System.out.println("reviews List initialized");
+
 		try {
 			Connection conn = DatabaseConnection.initializeDatabase();
 
 			String selectStr = "SELECT review.star_count, review.review_title, review.description, \"user\".full_name FROM review INNER JOIN booking ON review.booking_id = booking.booking_id INNER JOIN \"user\" ON booking.user_id = \"user\".user_id;";
 
 			PreparedStatement userStatement = conn.prepareStatement(selectStr);
-			System.out.println("Executing query...");
+
 			ResultSet userSet = userStatement.executeQuery();
 			
-			System.out.println("Query executed successfully.");
 			while(userSet.next()) {  
 				int starCount = userSet.getInt("star_count");
 				String reviewTitle = userSet.getString("review_title");
