@@ -6,6 +6,12 @@
 <meta charset="UTF-8">
 <title>My Profile</title>
 
+<!-- Author : Kaung Ye Myint Mo
+Adm No : 2340250
+Class : DIT/FT/2B/01
+Date : 25/11/2024
+Description : ST0510-JAD-Assignment1 -->
+
 <%@ include file="include/bootstrap.html"%>
 <%@ include file="include/tailwind.html"%>
 
@@ -85,6 +91,7 @@ body {
 	bookings = (List<UserBooking>) session.getAttribute("userBookings");
 	System.out.println(bookings.isEmpty());
 	}
+	String contextPath = request.getContextPath();
 	int user_id = user.getUser_id();
 	int role_id = user.getRole_id();
 	String full_name = user.getFull_name();
@@ -300,8 +307,9 @@ body {
 												<%
 												// if booking is over 
 												if (booking.getStatus_id() == 1) {
+													request.setAttribute("booking_id", booking.getBooking_id());
 												%>
-												<form method="POST">
+												<form action="<%=contextPath %>/client/reviewForm.jsp" method="GET">
 													<button type="submit" id="reviewbtn"
 														class="w-full py-2 px-4 bg-red-500 text-white rounded-full hover:bg-red-300 transition-colors">
 														Review</button>
