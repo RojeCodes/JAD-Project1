@@ -1,5 +1,11 @@
 package servlets;
 
+/*Author : Kaung Ye Myint Mo
+Adm No : 2340250
+Class : DIT/FT/2B/01
+Date : 25/11/2024
+Description : ST0510-JAD-Assignment1
+*/
 import jakarta.servlet.ServletException;
 
 import jakarta.servlet.annotation.WebServlet;
@@ -90,7 +96,7 @@ public class RegisterServlet extends HttpServlet {
 	// Use BCrypt to generate a hash
 	private String hashPassword(String password) {
 		String salt = BCrypt.gensalt(12);
-		return BCrypt.hashpw(password, BCrypt.gensalt());
+		return BCrypt.hashpw(password, salt);
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -112,7 +118,7 @@ public class RegisterServlet extends HttpServlet {
 
 		if (!pwd.equals(confirmPwd)) {
 			System.out.println("Passwords don't match");
-			response.sendRedirect("client/register.jsp?errCode=passwordMismatch");
+			response.sendRedirect("../client/register.jsp?errCode=passwordMismatch");
 			return;
 		}
 
@@ -128,8 +134,6 @@ public class RegisterServlet extends HttpServlet {
 					System.out.println("older than or exactly 18 years.");
 				} else {
 					response.sendRedirect("../client/register.jsp?errCode=ageRestricted");
-
-					System.out.println("younger than 18 years.");
 					return;
 				}
 			} catch (Exception e) {
