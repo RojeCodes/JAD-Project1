@@ -11,6 +11,7 @@ public class Booking {
 	private int service_id;
 	private int user_id;
 	private int receipt_id;
+	private double price;
 	
 	public Booking (int booking_id, Date date, Time time,
 			int hour_count, int service_id, int user_id, int receipt_id) {
@@ -21,6 +22,15 @@ public class Booking {
 		this.service_id = service_id;
 		this.user_id = user_id;
 		this.receipt_id = receipt_id;
+	}
+	
+	public Booking (Date date, Time time, int hour_count, int service_id, int user_id, double price) {
+		this.date = date;
+		this.time = time;
+		this.hour_count = hour_count;
+		this.service_id = service_id;
+		this.user_id = user_id;
+		this.price = price;
 	}
 	
 	public int getBookingId() {
@@ -44,6 +54,9 @@ public class Booking {
 	public int getReceiptId() {
 		return this.receipt_id;
 	}
+	public double getPrice() {
+		return this.price;
+	}
 	
 	public void setDate(Date date) {
 		this.date = date;
@@ -58,3 +71,4 @@ public class Booking {
 		this.service_id = service_id;
 	}
 }
+
